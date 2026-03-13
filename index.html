@@ -1,86 +1,416 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>MCHIRI Engine</title>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MCHIRI — Living Geometry Engine</title>
 <style>
-body{
-margin:0;
-background:#050510;
-color:white;
-font-family:Arial;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-height:100vh;
-}
+  :root{
+    --bg:#02030a;
+    --bg2:#060915;
+    --line:rgba(135,170,255,.11);
+    --line2:rgba(117,241,255,.18);
+    --node:#f4fdff;
+    --glow:#7deeff;
+    --text:#f3f8ff;
+    --muted:rgba(219,231,255,.60);
+    --panel:rgba(8,11,25,.34);
+    --border:rgba(255,255,255,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    overflow:hidden;
+    font-family:Inter,Arial,Helvetica,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(circle at 50% 46%, rgba(90,114,255,.13), transparent 20%),
+      radial-gradient(circle at 18% 20%, rgba(0,255,255,.05), transparent 16%),
+      radial-gradient(circle at 82% 14%, rgba(194,113,255,.06), transparent 16%),
+      linear-gradient(180deg,#010207 0%,#030611 42%,#010207 100%);
+  }
+  .stars,.stars:before,.stars:after{
+    content:"";
+    position:fixed; inset:0; pointer-events:none;
+    background-image:
+      radial-gradient(circle at 12% 22%, rgba(255,255,255,.8) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 73% 18%, rgba(255,255,255,.6) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 88% 68%, rgba(255,255,255,.46) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 31% 77%, rgba(255,255,255,.35) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 57% 85%, rgba(255,255,255,.28) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 41% 14%, rgba(255,255,255,.32) 0 1px, transparent 1.8px);
+    opacity:.48;
+  }
+  .stars:before{transform:scale(1.45); opacity:.18}
+  .stars:after{transform:scale(2.1); opacity:.08}
 
-canvas{
-border:1px solid #333;
-}
+  .top{
+    position:fixed; top:14px; left:50%; transform:translateX(-50%);
+    z-index:8; text-align:center; pointer-events:none;
+  }
+  .top h1{
+    margin:0;
+    font-size:clamp(18px,3vw,30px);
+    font-weight:650;
+    letter-spacing:.12em;
+  }
+  .top p{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+  }
+
+  .controls{
+    position:fixed;
+    left:14px; top:14px;
+    z-index:9;
+    width:min(320px,calc(100vw - 28px));
+    border:1px solid var(--border);
+    background:var(--panel);
+    backdrop-filter:blur(14px);
+    border-radius:18px;
+    box-shadow:0 16px 40px rgba(0,0,0,.28);
+    overflow:hidden;
+  }
+  .controlsHead{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 12px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  .controlsHead .label{
+    font-size:11px; color:var(--muted); letter-spacing:.18em; text-transform:uppercase;
+  }
+  .toggle{
+    width:32px; height:32px; border-radius:10px; border:0; cursor:pointer;
+    background:rgba(255,255,255,.06); color:var(--text); font-size:18px;
+  }
+  .controlsBody{padding:12px; display:grid; gap:10px}
+  .controlsBody.hidden{display:none}
+  .seedRow{display:flex; gap:8px}
+  input[type=text]{
+    flex:1;
+    background:rgba(255,255,255,.05);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:11px 12px;
+    outline:none;
+    min-width:0;
+  }
+  input[type=range]{width:132px}
+  .mini{
+    display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;
+  }
+  .mini label{
+    color:var(--muted); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+  }
+  button{
+    appearance:none; border:0; cursor:pointer;
+    border-radius:12px; padding:11px 12px; font-weight:700;
+  }
+  .btnMain{
+    background:linear-gradient(180deg,#a6f5ff,#63e8ff);
+    color:#071018;
+  }
+  .btnGhost{
+    background:rgba(255,255,255,.06);
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+
+  .readout{
+    position:fixed; right:14px; bottom:14px; z-index:8;
+    display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+    max-width:min(460px,calc(100vw - 28px));
+  }
+  .pill{
+    background:rgba(8,11,25,.40);
+    border:1px solid var(--border);
+    backdrop-filter:blur(10px);
+    border-radius:999px;
+    padding:9px 12px;
+    color:var(--muted);
+    font-size:11px;
+    letter-spacing:.10em;
+    text-transform:uppercase;
+  }
+
+  .stage{position:fixed; inset:0}
+  canvas{display:block; width:100%; height:100%}
+
+  @media (max-width:700px){
+    .controls{width:calc(100vw - 24px); left:12px; top:12px}
+    .readout{left:12px; right:12px; bottom:12px}
+    .seedRow{flex-wrap:wrap}
+    .seedRow button{flex:1}
+  }
 </style>
-
 </head>
-
 <body>
+<div class="stars"></div>
 
-<h2>MCHIRI Geometry Engine</h2>
+<div class="top">
+  <h1>MCHIRI</h1>
+  <p>Living Number Geometry</p>
+</div>
 
-<canvas id="c" width="600" height="600"></canvas>
+<div class="controls">
+  <div class="controlsHead">
+    <div class="label">Rare Engine</div>
+    <button class="toggle" id="toggleBtn">−</button>
+  </div>
+  <div class="controlsBody" id="controlsBody">
+    <div class="seedRow">
+      <input id="seedInput" type="text" value="13724689" inputmode="numeric" placeholder="Numeric seed" />
+      <button class="btnMain" id="genBtn">Generate</button>
+      <button class="btnGhost" id="randBtn">Random</button>
+    </div>
+    <div class="mini">
+      <label>Density</label>
+      <input id="densityInput" type="range" min="10" max="40" value="22" />
+    </div>
+    <div class="mini">
+      <label>Life</label>
+      <input id="motionInput" type="range" min="0" max="100" value="38" />
+    </div>
+    <div class="mini">
+      <label>Gravity</label>
+      <input id="gravityInput" type="range" min="0" max="100" value="46" />
+    </div>
+    <div class="mini">
+      <label>Bridges</label>
+      <input id="bridgeInput" type="range" min="20" max="100" value="54" />
+    </div>
+  </div>
+</div>
+
+<div class="readout">
+  <div class="pill" id="seedTag">Seed 13724689</div>
+  <div class="pill" id="nodeTag">Nodes 22</div>
+  <div class="pill" id="modeTag">Mode Living Mesh</div>
+</div>
+
+<div class="stage"><canvas id="c"></canvas></div>
 
 <script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+const seedInput = document.getElementById("seedInput");
+const densityInput = document.getElementById("densityInput");
+const motionInput = document.getElementById("motionInput");
+const gravityInput = document.getElementById("gravityInput");
+const bridgeInput = document.getElementById("bridgeInput");
+const genBtn = document.getElementById("genBtn");
+const randBtn = document.getElementById("randBtn");
+const toggleBtn = document.getElementById("toggleBtn");
+const controlsBody = document.getElementById("controlsBody");
+const seedTag = document.getElementById("seedTag");
+const nodeTag = document.getElementById("nodeTag");
+const modeTag = document.getElementById("modeTag");
 
-const canvas = document.getElementById("c")
-const ctx = canvas.getContext("2d")
+let DPR = Math.min(window.devicePixelRatio || 1, 2);
+let W=0,H=0,CX=0,CY=0,TM=0;
+let state = { seed:"13724689", nodes:[], motion:.38, gravity:.46, bridges:.54, digits:[1,3,7], mode:"Living Mesh" };
 
-function generate(seed){
+function resize(){
+  W = Math.floor(innerWidth * DPR);
+  H = Math.floor(innerHeight * DPR);
+  canvas.width = W;
+  canvas.height = H;
+  CX = W/2;
+  CY = H/2;
+}
+addEventListener("resize", resize);
+resize();
 
-ctx.clearRect(0,0,600,600)
+function hashSeed(str){
+  let h = 2166136261;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h,16777619); }
+  return h >>> 0;
+}
+function rngFactory(seed){
+  let s = hashSeed(seed) || 123456789;
+  return function(){
+    s ^= s << 13; s ^= s >>> 17; s ^= s << 5;
+    return (s >>> 0) / 4294967295;
+  }
+}
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 
-let centerX = 300
-let centerY = 300
-let points = []
+function build(){
+  const seed = (seedInput.value || "").replace(/\D/g, "") || "13724689";
+  const digits = seed.split("").map(Number);
+  const rng = rngFactory(seed);
+  const count = clamp(parseInt(densityInput.value,10)||22, 10, 40);
+  const motion = (parseInt(motionInput.value,10)||38) / 100;
+  const gravity = (parseInt(gravityInput.value,10)||46) / 100;
+  const bridges = (parseInt(bridgeInput.value,10)||54) / 100;
+  const ringCount = 3 + (digits.length % 2);
+  const maxR = Math.min(W,H) * 0.11;
+  const nodes = [];
 
-for(let i=0;i<12;i++){
+  for(let i=0;i<count;i++){
+    const d = digits[i % digits.length];
+    const ring = i % ringCount;
+    const ringMix = ring / Math.max(1, ringCount - 1);
+    const radius = maxR * (1.1 + ringMix*1.75) * (0.92 + d*0.016);
+    const angle = (i / count) * Math.PI*2 + (d/10) * 1.22 + (rng() - 0.5) * 0.18;
+    nodes.push({
+      baseAngle: angle,
+      radius,
+      group:ring,
+      size: 1.6 + rng()*2.9 + d*0.035,
+      orbit: 0.25 + rng()*1.65,
+      pulse: 0.5 + rng()*1.7,
+      drift: (rng()-0.5) * 0.8,
+      digit:d
+    });
+  }
 
-let angle = (i/12)*Math.PI*2 + seed
-let r = 200
+  state = {
+    seed,
+    digits,
+    nodes,
+    motion,
+    gravity,
+    bridges,
+    mode: ringCount === 4 ? "Rare Constellation" : "Living Mesh"
+  };
 
-let x = centerX + Math.cos(angle)*r
-let y = centerY + Math.sin(angle)*r
-
-points.push([x,y])
-
-ctx.beginPath()
-ctx.arc(x,y,3,0,Math.PI*2)
-ctx.fill()
-
+  seedTag.textContent = "Seed " + seed;
+  nodeTag.textContent = "Nodes " + count;
+  modeTag.textContent = "Mode " + state.mode;
 }
 
-for(let i=0;i<points.length;i++){
-for(let j=i+1;j<points.length;j++){
-
-ctx.beginPath()
-ctx.moveTo(points[i][0],points[i][1])
-ctx.lineTo(points[j][0],points[j][1])
-ctx.strokeStyle="rgba(255,255,255,0.1)"
-ctx.stroke()
-
+function pointAt(n, t){
+  const life = state.motion;
+  const grav = state.gravity;
+  const pulse = 1 + Math.sin(t*0.0009*n.pulse + n.baseAngle) * (0.035 + life*0.075);
+  const orbitOffset = Math.sin(t*0.0011*n.orbit + n.baseAngle*2 + n.drift) * (18*life*DPR);
+  const gravityBend = Math.sin(t*0.0007 + n.group*1.2 + n.digit) * (grav * 14 * DPR);
+  const angle = n.baseAngle + t*0.00014*life*(n.group%2===0?1:-1) + orbitOffset/1100;
+  const radius = n.radius * pulse - gravityBend;
+  return {
+    x: CX + Math.cos(angle) * radius,
+    y: CY + Math.sin(angle) * radius,
+    size: n.size * DPR,
+    group: n.group,
+    digit: n.digit
+  };
 }
 
+function glowCircle(x,y,r,stops){
+  const g = ctx.createRadialGradient(x,y,0,x,y,r);
+  for(const s of stops) g.addColorStop(s[0], s[1]);
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fill();
 }
 
+function render(t){
+  TM = t;
+  ctx.clearRect(0,0,W,H);
+
+  glowCircle(CX, CY, Math.min(W,H)*0.46, [
+    [0, "rgba(114,238,255,0.06)"],
+    [.28, "rgba(95,119,255,0.045)"],
+    [1, "rgba(0,0,0,0)"]
+  ]);
+
+  const projected = state.nodes.map(n => pointAt(n, t));
+
+  for(let i=0;i<4;i++){
+    ctx.strokeStyle = "rgba(255,255,255,0.033)";
+    ctx.lineWidth = 1 * DPR;
+    ctx.beginPath();
+    ctx.arc(CX, CY, Math.min(W,H) * (0.1 + i*0.065), 0, Math.PI*2);
+    ctx.stroke();
+  }
+
+  const maxDist = Math.min(W,H) * (0.1 + state.bridges*0.2);
+  for(let i=0;i<projected.length;i++){
+    for(let j=i+1;j<projected.length;j++){
+      const dx = projected[i].x - projected[j].x;
+      const dy = projected[i].y - projected[j].y;
+      const dist = Math.hypot(dx,dy);
+      if(dist < maxDist){
+        const alpha = (1 - dist/maxDist) * (projected[i].group===projected[j].group ? 0.19 : 0.11);
+        ctx.strokeStyle = `rgba(125,238,255,${alpha})`;
+        ctx.lineWidth = (projected[i].group===projected[j].group ? 1.05 : 0.72) * DPR;
+        ctx.beginPath();
+        ctx.moveTo(projected[i].x, projected[i].y);
+        ctx.lineTo(projected[j].x, projected[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  ctx.strokeStyle = "rgba(135,170,255,0.11)";
+  ctx.lineWidth = 0.75 * DPR;
+  projected.forEach(p=>{
+    ctx.beginPath();
+    ctx.moveTo(CX, CY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  });
+
+  for(let i=0;i<projected.length;i+=2){
+    const a = projected[i];
+    const b = projected[(i+Math.floor(projected.length/3)) % projected.length];
+    ctx.strokeStyle = "rgba(189,150,255,0.06)";
+    ctx.lineWidth = 0.8 * DPR;
+    ctx.beginPath();
+    ctx.quadraticCurveTo(CX, CY, b.x, b.y);
+    ctx.moveTo(a.x, a.y);
+    ctx.quadraticCurveTo(CX, CY, b.x, b.y);
+    ctx.stroke();
+  }
+
+  glowCircle(CX, CY, 26*DPR, [
+    [0, "rgba(244,253,255,0.98)"],
+    [.36, "rgba(125,238,255,0.28)"],
+    [1, "rgba(125,238,255,0)"]
+  ]);
+
+  projected.forEach(p=>{
+    glowCircle(p.x, p.y, p.size*5.5, [
+      [0, "rgba(244,253,255,0.92)"],
+      [.34, "rgba(125,238,255,0.34)"],
+      [1, "rgba(125,238,255,0)"]
+    ]);
+    ctx.fillStyle = "rgba(244,253,255,0.98)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  requestAnimationFrame(render);
 }
 
-setInterval(()=>{
-generate(Math.random()*10)
-},2000)
+toggleBtn.onclick = ()=>{
+  controlsBody.classList.toggle("hidden");
+  toggleBtn.textContent = controlsBody.classList.contains("hidden") ? "+" : "−";
+};
+genBtn.onclick = build;
+randBtn.onclick = ()=>{
+  let s = "";
+  const len = 5 + Math.floor(Math.random()*5);
+  for(let i=0;i<len;i++) s += Math.floor(Math.random()*10);
+  seedInput.value = s;
+  build();
+};
+seedInput.addEventListener("keydown", e=>{ if(e.key === "Enter") build(); });
+densityInput.oninput = build;
+motionInput.oninput = build;
+gravityInput.oninput = build;
+bridgeInput.oninput = build;
 
-generate(1)
-
+build();
+requestAnimationFrame(render);
 </script>
-
 </body>
 </html>
