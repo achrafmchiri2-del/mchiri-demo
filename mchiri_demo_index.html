@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCHIRI Demo</title>
+<style>
+body{
+    margin:0;
+    background:#050510;
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+}
+canvas{
+    background:#000014;
+    border:1px solid #333;
+}
+button{
+    margin-top:10px;
+    padding:10px 20px;
+    background:#111;
+    color:white;
+    border:1px solid #555;
+    cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<h2>MCHIRI Geometry Generator (Demo)</h2>
+<canvas id="c" width="600" height="600"></canvas>
+<button onclick="generate()">Generate From Number</button>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function mapDigitsToPoints(num){
+    const digits = num.toString().split("").map(d=>parseInt(d));
+    const pts = [];
+    const centerX = canvas.width/2;
+    const centerY = canvas.height/2;
+    const radius = 200;
+
+    digits.forEach((d,i)=>{
+        const angle = (d/10) * Math.PI * 2;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        pts.push({x,y});
+    });
+
+    return pts;
+}
+
+function draw(points){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    ctx.strokeStyle="#00ffff";
+    ctx.lineWidth=2;
+
+    ctx.beginPath();
+    for(let i=0;i<points.length;i++){
+        const p = points[i];
+        if(i===0) ctx.moveTo(p.x,p.y);
+        else ctx.lineTo(p.x,p.y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    points.forEach(p=>{
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,4,0,Math.PI*2);
+        ctx.fillStyle="#ffffff";
+        ctx.fill();
+    });
+}
+
+function generate(){
+    const seed = Math.floor(Math.random()*999999);
+    const pts = mapDigitsToPoints(seed);
+    draw(pts);
+}
+
+generate();
+</script>
+
+</body>
+</html>
