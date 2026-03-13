@@ -3,260 +3,187 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MCHIRI Core Engine V5</title>
+<title>MCHIRI PROJECT X</title>
 <style>
   :root{
-    --bg:#02030a;
-    --bg2:#060914;
-    --text:#eef7ff;
-    --muted:rgba(219,231,255,.60);
-    --panel:rgba(8,11,25,.32);
-    --border:rgba(255,255,255,.08);
-    --glow:#7cecff;
+    --bg:#02040b; --panel:rgba(8,12,26,.24); --border:rgba(255,255,255,.09);
+    --text:#f4f8ff; --muted:rgba(228,236,255,.60);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;
-    overflow:hidden;
-    font-family:Inter,Arial,Helvetica,sans-serif;
-    color:var(--text);
+    margin:0; overflow:hidden; font-family:Inter,Arial,Helvetica,sans-serif; color:var(--text);
     background:
-      radial-gradient(circle at 50% 42%, rgba(96,116,255,.13), transparent 18%),
-      radial-gradient(circle at 18% 18%, rgba(0,255,255,.05), transparent 14%),
-      radial-gradient(circle at 84% 14%, rgba(184,112,255,.06), transparent 15%),
-      linear-gradient(180deg,#010207 0%,#030612 46%,#010207 100%);
+      radial-gradient(circle at 50% 45%, rgba(100,120,255,.10), transparent 20%),
+      radial-gradient(circle at 18% 22%, rgba(0,255,255,.05), transparent 16%),
+      radial-gradient(circle at 80% 14%, rgba(195,120,255,.06), transparent 18%),
+      linear-gradient(180deg,#010207 0%,#030612 50%,#010207 100%);
   }
+  .galaxy,.galaxy:before,.galaxy:after{
+    content:""; position:fixed; inset:-10%; pointer-events:none;
+    background:
+      radial-gradient(circle at 50% 52%, rgba(120,210,255,.15), transparent 18%),
+      radial-gradient(circle at 48% 46%, rgba(170,120,255,.12), transparent 24%),
+      radial-gradient(circle at 54% 56%, rgba(255,110,210,.08), transparent 22%);
+    filter: blur(40px); animation: drift 18s ease-in-out infinite alternate;
+  }
+  .galaxy:before{transform:rotate(18deg) scale(1.15); opacity:.65; animation-duration:24s}
+  .galaxy:after{transform:rotate(-22deg) scale(.92); opacity:.45; animation-duration:30s}
+  @keyframes drift{from{transform:translateY(-10px) rotate(0deg)}to{transform:translateY(10px) rotate(8deg)}}
   .stars,.stars:before,.stars:after{
-    content:"";
-    position:fixed; inset:0;
-    pointer-events:none;
+    content:""; position:fixed; inset:0; pointer-events:none;
     background-image:
-      radial-gradient(circle at 12% 22%, rgba(255,255,255,.75) 0 1px, transparent 1.8px),
-      radial-gradient(circle at 74% 18%, rgba(255,255,255,.55) 0 1px, transparent 1.8px),
-      radial-gradient(circle at 87% 67%, rgba(255,255,255,.42) 0 1px, transparent 1.8px),
-      radial-gradient(circle at 29% 79%, rgba(255,255,255,.32) 0 1px, transparent 1.8px),
-      radial-gradient(circle at 58% 85%, rgba(255,255,255,.25) 0 1px, transparent 1.8px);
-    opacity:.45;
+      radial-gradient(circle at 11% 20%, rgba(255,255,255,.80) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 23% 76%, rgba(255,255,255,.34) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 39% 16%, rgba(255,255,255,.45) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 62% 84%, rgba(255,255,255,.26) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 74% 22%, rgba(255,255,255,.60) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 87% 67%, rgba(255,255,255,.42) 0 1px, transparent 1.8px);
+    opacity:.55;
   }
-  .stars:before{transform:scale(1.45); opacity:.18}
-  .stars:after{transform:scale(2.0); opacity:.08}
-
-  .title{
-    position:fixed;
-    top:14px; left:50%;
-    transform:translateX(-50%);
-    z-index:9;
-    text-align:center;
-    pointer-events:none;
+  .stars:before{transform:scale(1.45); opacity:.20}
+  .stars:after{transform:scale(2.1); opacity:.08}
+  .brand{
+    position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:7; text-align:center; pointer-events:none;
   }
-  .title h1{
-    margin:0;
-    font-size:clamp(18px,3vw,30px);
-    font-weight:650;
-    letter-spacing:.14em;
+  .brand h1{margin:0; font-size:clamp(18px,3vw,30px); letter-spacing:.18em; font-weight:700}
+  .brand p{margin:6px 0 0; color:var(--muted); font-size:11px; letter-spacing:.28em; text-transform:uppercase}
+  .quote{
+    position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:7;
+    width:min(760px,calc(100vw - 26px)); text-align:center; color:rgba(236,242,255,.54);
+    font-size:11px; letter-spacing:.18em; text-transform:uppercase; pointer-events:none;
+    text-shadow:0 0 18px rgba(120,236,255,.12);
   }
-  .title p{
-    margin:6px 0 0;
-    font-size:11px;
-    color:var(--muted);
-    letter-spacing:.20em;
-    text-transform:uppercase;
-  }
-
   .controls{
-    position:fixed;
-    top:14px; left:14px;
-    z-index:10;
-    width:min(320px,calc(100vw - 28px));
-    border:1px solid var(--border);
-    background:var(--panel);
-    backdrop-filter:blur(14px);
-    border-radius:18px;
-    box-shadow:0 16px 40px rgba(0,0,0,.28);
-    overflow:hidden;
+    position:fixed; top:14px; left:14px; z-index:8; width:min(270px,calc(100vw - 28px));
+    border:1px solid var(--border); border-radius:16px; background:var(--panel);
+    backdrop-filter:blur(12px); box-shadow:0 14px 36px rgba(0,0,0,.24); overflow:hidden;
   }
   .controlsHead{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:11px 12px;
+    display:flex; justify-content:space-between; align-items:center; padding:10px 11px;
     border-bottom:1px solid rgba(255,255,255,.05);
   }
-  .controlsHead .label{
-    font-size:11px;
-    color:var(--muted);
-    letter-spacing:.18em;
-    text-transform:uppercase;
-  }
+  .controlsHead .label{font-size:10px; color:var(--muted); letter-spacing:.24em; text-transform:uppercase}
   .toggle{
-    width:32px; height:32px;
-    border-radius:10px;
-    border:0;
-    cursor:pointer;
-    background:rgba(255,255,255,.06);
-    color:var(--text);
-    font-size:18px;
+    width:28px; height:28px; border-radius:9px; border:0; background:rgba(255,255,255,.06);
+    color:var(--text); cursor:pointer; font-size:16px;
   }
-  .controlsBody{
-    padding:12px;
-    display:grid;
-    gap:10px;
-  }
+  .controlsBody{padding:10px; display:grid; gap:9px}
   .controlsBody.hidden{display:none}
-  .seedRow{
-    display:flex;
-    gap:8px;
-  }
+  .seedRow{display:flex; gap:7px}
   input[type=text]{
-    flex:1;
-    min-width:0;
-    background:rgba(255,255,255,.05);
-    color:var(--text);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:11px 12px;
-    outline:none;
-  }
-  input[type=range]{width:132px}
-  .mini{
-    display:grid;
-    grid-template-columns:1fr auto;
-    gap:10px;
-    align-items:center;
-  }
-  .mini label{
-    color:var(--muted);
-    font-size:11px;
-    letter-spacing:.14em;
-    text-transform:uppercase;
+    flex:1; min-width:0; border:1px solid var(--border); background:rgba(255,255,255,.05); color:var(--text);
+    border-radius:11px; padding:10px 11px; outline:none; font-size:15px;
   }
   button{
-    appearance:none;
-    border:0;
-    cursor:pointer;
-    border-radius:12px;
-    padding:11px 12px;
-    font-weight:700;
+    appearance:none; border:0; cursor:pointer; border-radius:11px; padding:10px 12px; font-weight:700; font-size:13px;
   }
-  .btnMain{
-    background:linear-gradient(180deg,#a6f5ff,#63e8ff);
-    color:#071018;
-  }
-  .btnGhost{
-    background:rgba(255,255,255,.06);
-    color:var(--text);
-    border:1px solid var(--border);
-  }
-
+  .btnMain{background:linear-gradient(180deg,#a5f6ff,#66e8ff); color:#071018}
+  .btnGhost{background:rgba(255,255,255,.06); color:var(--text); border:1px solid var(--border)}
+  .mini{display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center}
+  .mini label{font-size:10px; color:var(--muted); letter-spacing:.18em; text-transform:uppercase}
+  input[type=range]{width:112px}
   .readout{
-    position:fixed;
-    right:14px; bottom:14px;
-    z-index:9;
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    justify-content:flex-end;
-    max-width:min(500px,calc(100vw - 28px));
+    position:fixed; right:14px; bottom:16px; z-index:7; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+    max-width:min(440px,calc(100vw - 28px)); pointer-events:none;
   }
   .pill{
-    background:rgba(8,11,25,.40);
-    border:1px solid var(--border);
-    backdrop-filter:blur(10px);
-    border-radius:999px;
-    padding:9px 12px;
-    color:var(--muted);
-    font-size:11px;
-    letter-spacing:.10em;
-    text-transform:uppercase;
+    background:rgba(8,11,25,.34); border:1px solid var(--border); border-radius:999px; padding:8px 12px;
+    color:var(--muted); backdrop-filter:blur(10px); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
   }
-
   .stage{position:fixed; inset:0}
   canvas{display:block; width:100%; height:100%}
-
   @media (max-width:700px){
     .controls{width:calc(100vw - 24px); left:12px; top:12px}
-    .readout{left:12px; right:12px; bottom:12px}
+    .readout{left:12px; right:12px; bottom:44px}
+    .quote{bottom:12px; font-size:9px; letter-spacing:.14em}
     .seedRow{flex-wrap:wrap}
     .seedRow button{flex:1}
   }
 </style>
 </head>
 <body>
+<div class="galaxy"></div>
 <div class="stars"></div>
 
-<div class="title">
-  <h1>MCHIRI</h1>
-  <p>Core Engine V5 · Number to Geometry</p>
+<div class="brand">
+  <h1>MCHIRI PROJECT X</h1>
+  <p>Living Geometry Field</p>
 </div>
 
 <div class="controls">
   <div class="controlsHead">
-    <div class="label">Rule Engine</div>
+    <div class="label">Smart Menu</div>
     <button class="toggle" id="toggleBtn">−</button>
   </div>
   <div class="controlsBody" id="controlsBody">
     <div class="seedRow">
-      <input id="seedInput" type="text" value="137246890" inputmode="numeric" placeholder="Numeric seed" />
+      <input id="seedInput" type="text" value="13724689" inputmode="numeric" placeholder="MCHIRI seed" />
       <button class="btnMain" id="genBtn">Generate</button>
-      <button class="btnGhost" id="randBtn">Random</button>
     </div>
     <div class="mini">
       <label>Life</label>
-      <input id="lifeInput" type="range" min="0" max="100" value="34" />
+      <input id="lifeInput" type="range" min="0" max="100" value="38" />
     </div>
     <div class="mini">
       <label>Gravity</label>
       <input id="gravityInput" type="range" min="0" max="100" value="42" />
     </div>
     <div class="mini">
-      <label>Bridges</label>
-      <input id="bridgeInput" type="range" min="20" max="100" value="54" />
+      <label>Color Shift</label>
+      <input id="colorInput" type="range" min="0" max="100" value="54" />
     </div>
     <div class="mini">
-      <label>Glow</label>
-      <input id="glowInput" type="range" min="20" max="100" value="68" />
+      <label>Clear Form</label>
+      <input id="clarityInput" type="range" min="20" max="100" value="72" />
+    </div>
+    <div class="seedRow">
+      <button class="btnGhost" id="randBtn">Random</button>
+      <button class="btnGhost" id="mysteryBtn">Mystery</button>
     </div>
   </div>
 </div>
 
 <div class="readout">
-  <div class="pill" id="seedTag">Seed 137246890</div>
-  <div class="pill" id="ruleTag">Rule Mixed Structure</div>
+  <div class="pill" id="seedTag">Seed 13724689</div>
+  <div class="pill" id="ruleTag">Rare Constellation</div>
   <div class="pill" id="countTag">Nodes 0</div>
 </div>
+
+<div class="quote" id="mysteryText">What appears silent is only geometry waiting to breathe.</div>
 
 <div class="stage"><canvas id="c"></canvas></div>
 
 <script>
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
-
 const seedInput = document.getElementById("seedInput");
 const lifeInput = document.getElementById("lifeInput");
 const gravityInput = document.getElementById("gravityInput");
-const bridgeInput = document.getElementById("bridgeInput");
-const glowInput = document.getElementById("glowInput");
+const colorInput = document.getElementById("colorInput");
+const clarityInput = document.getElementById("clarityInput");
 const genBtn = document.getElementById("genBtn");
 const randBtn = document.getElementById("randBtn");
+const mysteryBtn = document.getElementById("mysteryBtn");
 const toggleBtn = document.getElementById("toggleBtn");
 const controlsBody = document.getElementById("controlsBody");
 const seedTag = document.getElementById("seedTag");
 const ruleTag = document.getElementById("ruleTag");
 const countTag = document.getElementById("countTag");
+const mysteryText = document.getElementById("mysteryText");
+
+const quotes = [
+  "What appears silent is only geometry waiting to breathe.",
+  "Every number hides a gate. Every gate hides a form.",
+  "The field remembers before the eye understands.",
+  "This shape is not random. It is only not translated yet.",
+  "Inside the orbit, structure listens for command.",
+  "The center is not still. It is deciding."
+];
 
 let DPR = Math.min(window.devicePixelRatio || 1, 2);
 let W=0,H=0,CX=0,CY=0;
-
-let state = {
-  seed:"137246890",
-  nodes:[],
-  life:.34,
-  gravity:.42,
-  bridges:.54,
-  glow:.68,
-  mode:"Mixed Structure"
-};
+let state = { seed:"13724689", nodes:[], life:.38, gravity:.42, colorShift:.54, clarity:.72, mode:"Rare Constellation" };
 
 function resize(){
   W = Math.floor(innerWidth * DPR);
@@ -271,78 +198,49 @@ resize();
 
 function hashSeed(str){
   let h = 2166136261;
-  for(let i=0;i<str.length;i++){
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
 function rngFactory(seed){
   let s = hashSeed(seed) || 123456789;
-  return function(){
-    s ^= s << 13;
-    s ^= s >>> 17;
-    s ^= s << 5;
-    return (s >>> 0) / 4294967295;
-  };
+  return function(){ s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return (s >>> 0) / 4294967295; };
 }
-function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-
-function addNode(arr, angle, radius, group, size, digit, speed){
-  arr.push({
-    baseAngle:angle,
-    radius:radius,
-    group:group,
-    size:size,
-    digit:digit,
-    speed:speed,
-    pulse:.4 + Math.random()*1.7,
-    drift:(Math.random()-.5)*.9
-  });
+function addNode(arr, angle, radius, group, size, digit, speed, ring){
+  arr.push({ baseAngle:angle, radius:radius, group:group, size:size, digit:digit, speed:speed, ring:ring,
+    pulse:.4 + Math.random()*1.9, drift:(Math.random()-.5)*1.0 });
 }
 
 function buildSeedStructure(seed){
-  const clean = (seed || "").replace(/\D/g,"") || "137246890";
+  const clean = (seed || "").replace(/\D/g, "") || "13724689";
   const digits = clean.split("").map(Number);
   const rng = rngFactory(clean);
   const nodes = [];
   let group = 0;
-  const unit = Math.min(W,H) * 0.038;
+  const unit = Math.min(W,H) * 0.050;
 
   for(let i=0;i<digits.length;i++){
     const d = digits[i];
-    if(d === 0){
-      addNode(nodes, 0, 0, group++, 3.7, d, 0);
-      continue;
-    }
-
-    if(d === 1){
-      addNode(nodes, 0, unit*0.8, group++, 2.5, d, .3);
-      continue;
-    }
-
+    if(d === 0){ addNode(nodes, 0, 0, group++, 4.2, d, 0, 0); continue; }
+    if(d === 1){ addNode(nodes, 0, unit*0.8 + i*unit*.22, group++, 2.7, d, .28, 1); continue; }
     if(d === 2){
       for(let k=0;k<2;k++){
-        const a = k*Math.PI + i*0.12;
-        addNode(nodes, a, unit*1.25, group, 2.2, d, .45);
+        const a = k*Math.PI + i*0.14;
+        addNode(nodes, a, unit*1.4 + i*unit*.12, group, 2.4, d, .42, 1);
       }
-      group++;
-      continue;
+      group++; continue;
     }
-
     const count = d;
-    const radius = unit * (1.2 + i*0.34);
-    const rotation = i*0.32 + (rng()-.5)*0.35;
+    const radius = unit * (2.0 + i*0.52);
+    const rotation = i*0.34 + (rng()-.5)*0.32;
     for(let k=0;k<count;k++){
       const a = rotation + (k/count)*Math.PI*2;
-      addNode(nodes, a, radius, group, 1.8 + d*0.1, d, .25 + rng()*1.2);
+      addNode(nodes, a, radius, group, 1.9 + d*0.11, d, .25 + rng()*1.1, 1 + i);
     }
-
-    if(d === 7 || d === 8 || d === 9){
-      const orbitCount = d - 5;
+    if(d >= 7){
+      const orbitCount = d - 4;
       for(let k=0;k<orbitCount;k++){
         const a = rotation + (k/orbitCount)*Math.PI*2 + Math.PI/orbitCount;
-        addNode(nodes, a, radius*1.34, group+1, 1.6 + d*0.06, d, .22 + rng()*1.1);
+        addNode(nodes, a, radius*1.34, group+1, 1.7 + d*0.06, d, .22 + rng()*1.0, 2 + i);
       }
       group += 2;
     } else {
@@ -350,10 +248,10 @@ function buildSeedStructure(seed){
     }
   }
 
-  if(nodes.length < 10){
-    for(let i=0;i<10;i++){
-      const a = (i/10)*Math.PI*2;
-      addNode(nodes, a, unit*3.2, 99, 2, 9, .4);
+  if(nodes.length < 12){
+    for(let i=0;i<12;i++){
+      const a = (i/12)*Math.PI*2;
+      addNode(nodes, a, unit*4.2, 99, 2, 9, .4, 4);
     }
   }
 
@@ -364,134 +262,138 @@ function rebuild(){
   const built = buildSeedStructure(seedInput.value);
   state.seed = built.clean;
   state.nodes = built.nodes;
-  state.life = (+lifeInput.value || 34)/100;
+  state.life = (+lifeInput.value || 38)/100;
   state.gravity = (+gravityInput.value || 42)/100;
-  state.bridges = (+bridgeInput.value || 54)/100;
-  state.glow = (+glowInput.value || 68)/100;
+  state.colorShift = (+colorInput.value || 54)/100;
+  state.clarity = (+clarityInput.value || 72)/100;
 
   const uniqueDigits = [...new Set(built.digits)];
-  state.mode = uniqueDigits.length > 6 ? "Dense Hybrid Language" :
+  state.mode = uniqueDigits.length > 6 ? "Galaxy Language" :
                uniqueDigits.includes(0) ? "Axis Core Structure" :
-               uniqueDigits.includes(7) || uniqueDigits.includes(8) || uniqueDigits.includes(9) ? "Orbital Rule Structure" :
-               "Polygon Rule Structure";
+               uniqueDigits.includes(7) || uniqueDigits.includes(8) || uniqueDigits.includes(9) ? "Rare Constellation" :
+               "Polygon Breath";
 
   seedTag.textContent = "Seed " + state.seed;
-  ruleTag.textContent = "Rule " + state.mode;
+  ruleTag.textContent = state.mode;
   countTag.textContent = "Nodes " + state.nodes.length;
 }
 
 function pointAt(n, t){
   const life = state.life;
   const grav = state.gravity;
-  const pulse = 1 + Math.sin(t*0.001*n.pulse + n.baseAngle*2 + n.drift) * (0.03 + life*0.08);
-  const orbit = Math.sin(t*0.0011*n.speed + n.baseAngle + n.digit) * (14*life*DPR);
-  const gravPull = grav * Math.sin(t*0.0007 + n.group*1.1 + n.digit) * 10 * DPR;
-  const angle = n.baseAngle + t*0.00015*n.speed*life + orbit/1000;
+  const pulse = 1 + Math.sin(t*0.001*n.pulse + n.baseAngle*2 + n.drift) * (0.035 + life*0.085);
+  const orbit = Math.sin(t*0.00105*n.speed + n.baseAngle + n.digit) * (16*life*DPR);
+  const gravPull = grav * Math.sin(t*0.0007 + n.group*1.15 + n.digit) * 9 * DPR;
+  const angle = n.baseAngle + t*0.00014*n.speed*life*(n.group%2===0?1:-1) + orbit/950;
   const radius = Math.max(0, n.radius * pulse - gravPull);
-  return {
-    x: CX + Math.cos(angle)*radius,
-    y: CY + Math.sin(angle)*radius,
-    size: n.size * DPR,
-    group: n.group,
-    digit: n.digit
-  };
+  return { x:CX + Math.cos(angle)*radius, y:CY + Math.sin(angle)*radius, size:n.size * DPR, group:n.group, digit:n.digit, ring:n.ring };
 }
 
 function glowCircle(x,y,r,stops){
   const g = ctx.createRadialGradient(x,y,0,x,y,r);
   for(const s of stops) g.addColorStop(s[0], s[1]);
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x,y,r,0,Math.PI*2);
-  ctx.fill();
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+}
+function colorForDigit(d){
+  const mix = state.colorShift;
+  const palette = [
+    [124,236,255], [255,215,107], [184,140,255], [255,141,216], [120,255,188],
+    [122,212,255], [255,179,120], [168,132,255], [111,255,247], [255,122,186]
+  ];
+  const c = palette[d % palette.length];
+  return {
+    r:Math.round(c[0]*(.55+.45*mix)),
+    g:Math.round(c[1]*(.55+.45*mix)),
+    b:Math.round(c[2]*(.55+.45*mix))
+  };
 }
 
-function drawBackground(){
-  glowCircle(CX, CY, Math.min(W,H)*0.46, [
-    [0, "rgba(114,238,255,0.06)"],
-    [.28, "rgba(95,119,255,0.045)"],
+function drawBackground(t){
+  glowCircle(CX, CY, Math.min(W,H)*0.5, [
+    [0, "rgba(124,236,255,0.07)"],
+    [.25, "rgba(110,120,255,0.045)"],
+    [.55, "rgba(255,122,186,0.018)"],
     [1, "rgba(0,0,0,0)"]
   ]);
 
+  for(let i=0;i<90;i++){
+    const a = i*0.42 + t*0.00005;
+    const r = Math.min(W,H)*(0.03 + i*0.0038);
+    const x = CX + Math.cos(a)*r*1.05;
+    const y = CY + Math.sin(a)*r*0.66;
+    const alpha = i < 25 ? 0.020 : 0.010;
+    ctx.fillStyle = `rgba(${110+i%40},${180+i%50},255,${alpha})`;
+    ctx.beginPath(); ctx.arc(x,y, Math.max(1.2, 3.8 - i*0.02)*DPR, 0, Math.PI*2); ctx.fill();
+  }
+
   for(let i=0;i<5;i++){
-    ctx.strokeStyle = "rgba(255,255,255,0.028)";
+    ctx.strokeStyle = "rgba(255,255,255,0.026)";
     ctx.lineWidth = 1 * DPR;
     ctx.beginPath();
-    ctx.arc(CX, CY, Math.min(W,H)*(0.06 + i*0.055), 0, Math.PI*2);
+    ctx.arc(CX, CY, Math.min(W,H)*(0.08 + i*0.07), 0, Math.PI*2);
     ctx.stroke();
   }
 }
 
 function render(t){
   ctx.clearRect(0,0,W,H);
-  drawBackground();
+  drawBackground(t);
 
   const pts = state.nodes.map(n => pointAt(n, t));
-  const maxDist = Math.min(W,H) * (0.08 + state.bridges*0.18);
+  const clarity = state.clarity;
+  const maxDist = Math.min(W,H) * (0.10 + 0.18*clarity);
 
   for(let i=0;i<pts.length;i++){
     for(let j=i+1;j<pts.length;j++){
       const dx = pts[i].x - pts[j].x;
       const dy = pts[i].y - pts[j].y;
       const dist = Math.hypot(dx,dy);
-
       if(dist < maxDist){
         const sameGroup = pts[i].group === pts[j].group;
         const sameDigit = pts[i].digit === pts[j].digit;
-        const alpha = (1 - dist/maxDist) * (sameGroup ? 0.18 : sameDigit ? 0.12 : 0.07);
+        const alpha = (1 - dist/maxDist) * (sameGroup ? 0.22*clarity : sameDigit ? 0.12*clarity : 0.06*clarity);
 
-        ctx.strokeStyle = sameGroup
-          ? `rgba(125,238,255,${alpha})`
-          : sameDigit
-          ? `rgba(190,150,255,${alpha})`
-          : `rgba(120,160,255,${alpha})`;
-
-        ctx.lineWidth = (sameGroup ? 1.05 : 0.72) * DPR;
-        ctx.beginPath();
-        ctx.moveTo(pts[i].x, pts[i].y);
-        ctx.lineTo(pts[j].x, pts[j].y);
-        ctx.stroke();
+        if(sameGroup){
+          ctx.strokeStyle = `rgba(124,236,255,${alpha})`;
+        }else if(sameDigit){
+          ctx.strokeStyle = `rgba(184,140,255,${alpha})`;
+        }else{
+          ctx.strokeStyle = `rgba(255,141,216,${alpha*.7})`;
+        }
+        ctx.lineWidth = (sameGroup ? 1.15 : 0.78) * DPR;
+        ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
       }
     }
   }
 
-  ctx.strokeStyle = "rgba(135,170,255,0.10)";
-  ctx.lineWidth = 0.75 * DPR;
-  pts.forEach(p=>{
-    ctx.beginPath();
-    ctx.moveTo(CX, CY);
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
-  });
+  ctx.strokeStyle = `rgba(135,170,255,${0.11*clarity})`;
+  ctx.lineWidth = 0.78 * DPR;
+  pts.forEach(p=>{ ctx.beginPath(); ctx.moveTo(CX, CY); ctx.lineTo(p.x, p.y); ctx.stroke(); });
 
   for(let i=0;i<pts.length;i+=3){
     const a = pts[i];
     const b = pts[(i + Math.floor(pts.length/4)) % pts.length];
-    ctx.strokeStyle = "rgba(189,150,255,0.05)";
+    ctx.strokeStyle = `rgba(255,215,107,${0.05*clarity})`;
     ctx.lineWidth = 0.8 * DPR;
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.quadraticCurveTo(CX, CY, b.x, b.y);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(CX, CY, b.x, b.y); ctx.stroke();
   }
 
-  glowCircle(CX, CY, 28*DPR, [
-    [0, "rgba(244,253,255,0.98)"],
-    [.34, "rgba(125,238,255,0.28)"],
-    [1, "rgba(125,238,255,0)"]
+  glowCircle(CX, CY, 30*DPR, [
+    [0, "rgba(244,253,255,0.99)"],
+    [.30, "rgba(124,236,255,0.34)"],
+    [1, "rgba(124,236,255,0)"]
   ]);
 
-  const glowBoost = 3.5 + state.glow*3.2;
+  const glowBoost = 3.8 + clarity*3.8;
   pts.forEach(p=>{
+    const c = colorForDigit(p.digit);
     glowCircle(p.x, p.y, p.size*glowBoost, [
       [0, "rgba(244,253,255,0.92)"],
-      [.34, "rgba(125,238,255,0.34)"],
-      [1, "rgba(125,238,255,0)"]
+      [.28, `rgba(${c.r},${c.g},${c.b},0.40)`],
+      [1, `rgba(${c.r},${c.g},${c.b},0)`]
     ]);
-    ctx.fillStyle = "rgba(244,253,255,0.98)";
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-    ctx.fill();
+    ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},0.98)`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
   });
 
   requestAnimationFrame(render);
@@ -501,21 +403,19 @@ toggleBtn.onclick = ()=>{
   controlsBody.classList.toggle("hidden");
   toggleBtn.textContent = controlsBody.classList.contains("hidden") ? "+" : "−";
 };
-
 genBtn.onclick = rebuild;
 randBtn.onclick = ()=>{
-  let s = "";
-  const len = 5 + Math.floor(Math.random()*6);
+  let s = ""; const len = 5 + Math.floor(Math.random()*6);
   for(let i=0;i<len;i++) s += Math.floor(Math.random()*10);
-  seedInput.value = s;
-  rebuild();
+  seedInput.value = s; rebuild();
 };
+mysteryBtn.onclick = ()=>{ mysteryText.textContent = quotes[Math.floor(Math.random()*quotes.length)]; };
 
 seedInput.addEventListener("keydown", e=>{ if(e.key === "Enter") rebuild(); });
 lifeInput.oninput = rebuild;
 gravityInput.oninput = rebuild;
-bridgeInput.oninput = rebuild;
-glowInput.oninput = rebuild;
+colorInput.oninput = rebuild;
+clarityInput.oninput = rebuild;
 
 rebuild();
 requestAnimationFrame(render);
